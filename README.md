@@ -209,3 +209,26 @@ These findings align with established clinical knowledge, increasing confidence 
 
 **Best Overall Predictive Model:** SVM  
 **Best Explainable Model:** XGBoost
+
+---
+
+## Engineering Decision Case Study: How I Think
+
+When developing this predictive system, I ran into a major trade-off between **Raw Machine Learning Metrics** and **Real-World Clinical Safety**. Here is my analysis and how I solved it:
+
+### 1. The Cholesterol Data Dilemma (Data Integrity)
+During Exploratory Data Analysis (EDA), I found that **172 records showed a Cholesterol level of `0`**. Biologically, a living human cannot have a 0 cholesterol level. 
+* *Alternative 1 (Drop the data):* If I dropped all 172 rows, I would lose nearly 20% of my training dataset, weakening the model.
+* *Alternative 2 (Mean Imputation):* Using the average value could be skewed heavily by extreme patient outliers.
+* * My Solution:* I engineered a robust **Median Imputation** strategy targeting only the invalid zero entries. This preserved the volume of the dataset while protecting the distribution from outlier distortion.
+
+### 2. The Model Trade-Off: Accuracy vs. Interpretability
+Both the Support Vector Machine (SVM) and XGBoost achieved an identical **85.87% classification accuracy**. However, looking deeper into their math forced a crucial decision:
+
+* **Support Vector Machine (SVM):** Achieved a higher overall Area Under the Curve (**ROC-AUC: 0.9409**). This means its curved mathematical hyperplane separates complex, non-linear patient combinations slightly better. However, it is a "black-box"—doctors cannot see *why* the model makes a decision.
+* **XGBoost Classifier:** Achieved a slightly lower area separation (**ROC-AUC: 0.9162**), but it provides explicit **Feature Importances**. It clearly shows that `ST_Slope` (post-exercise cardiac stress) and `ExerciseAngina` are the strongest risk triggers.
+
+###  Final Architectural Conclusion
+If this system were deployed in an insurance company where raw performance is everything, **SVM** wins. 
+
+But for a real-world clinic, **I recommend XGBoost**. In healthcare, a black-box model can be dangerous because doctors must trust and verify the logic before treating a patient. XGBoost provides the perfect balance of high accuracy (85.87%) combined with completely transparent, trustworthy clinical explanations.
