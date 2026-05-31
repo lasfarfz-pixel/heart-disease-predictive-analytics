@@ -7,7 +7,8 @@ This document walks through the key findings, decisions, and insights from this 
 *Dataset:* [Heart Failure Prediction Dataset](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data) — 918 patients, 11 clinical features.
 
 ---
-## 📁 Project Structure
+
+## Project Structure
 ```text
 heart-disease-predictive-analytics/
 │
