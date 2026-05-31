@@ -1,118 +1,160 @@
-# Heart Failure Prediction — ML Classification Pipeline
+# Project Analysis — Heart Failure Prediction
 
-> Exploratory Data Analysis · SVM · XGBoost · Hyperparameter Tuning · Healthcare Analytics
+## Overview
 
------
-
-## Project Overview
-
-A complete end-to-end machine learning pipeline to predict heart disease from clinical patient data. This project covers the full data science workflow: raw data exploration, preprocessing, model training, evaluation, and hyperparameter optimization — comparing two powerful classification algorithms (SVM and XGBoost).
-
-The goal is to build models that can assist in *early diagnosis and risk prediction* of cardiovascular disease, one of the most prevalent health issues worldwide.
+This document walks through the key findings, decisions, and insights from this project. The goal was to predict whether a patient has heart disease based on clinical data, and to compare the performance of two machine learning approaches: Support Vector Machine (SVM) and XGBoost.
 
 *Dataset:* [Heart Failure Prediction Dataset](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data) — 918 patients, 11 clinical features.
 
------
-
-## Project Structure
-
-
-heart-failure-prediction/
+---
+## 📁 Project Structure
+```text
+heart-disease-predictive-analytics/
 │
-├── heart-failure-prediction.ipynb   # Full pipeline notebook
+├── data/
+│   └── heart.csv                    # Raw clinical patient dataset
+│
+├── src/
+│   ├── data_preprocessing.py        # Automated cleaning, imputation & feature encoding
+│   └── models.py                    # Production model training & validation scripts
+│
+├── heart-failure-prediction.ipynb   # Experimental pipeline & visualization notebook
 ├── report.pdf                       # Detailed analysis report
-└── README.md                        # This file
+├── requirements.txt                 # Exact package dependency versions
+└── README.md                        # Portfolio landing page & executive brief
 
+## 1. Understanding the Data
 
------
+The dataset contains *918 patients* with *11 clinical features* including age, cholesterol, resting blood pressure, chest pain type, and maximum heart rate.
 
-## Key Findings
+### Class Distribution
+The target variable (HeartDisease) is slightly imbalanced:
+- *55.3%* of patients have heart disease
+- *44.7%* do not
 
-### EDA Insights
+This mild imbalance is worth noting — it means accuracy alone isn't enough to evaluate model performance. ROC-AUC is a better metric here.
 
-|Observation         |Detail                                                               |
-|--------------------|---------------------------------------------------------------------|
-|Dataset balance     |55.3% positive (Heart Disease = 1) — mild imbalance                  |
-|Data quality issue  |172 zero values in Cholesterol → replaced with median (237)          |
-|Strongest predictors|ST_Slope, ExerciseAngina, Oldpeak, MaxHR                             |
-|Notable pattern     |Higher Oldpeak and lower MaxHR strongly associated with heart disease|
+### Data Quality Issue
+A significant data quality problem was found in the *Cholesterol* column: *172 patients had a value of 0, which is medically impossible. These were treated as missing values and replaced with the **median cholesterol value (237 mg/dL)*.
 
-### Model Performance
+> The median was chosen over the mean to avoid the influence of extreme outliers on the imputed values.
 
-|Model             |Accuracy|ROC-AUC                        |
-|------------------|--------|-------------------------------|
-|SVM (RBF kernel)  |85.87%  |94.09%                         |
-|XGBoost (baseline)|85.87%  |91.62%                         |
-|XGBoost (tuned)   |85.87%  |91.95% (GridSearchCV optimised)|
+---
 
+## 2. Key Findings from Exploratory Data Analysis
 
-> SVM achieves higher ROC-AUC, indicating stronger discrimination ability. XGBoost offers better interpretability through feature importance analysis — a critical advantage in healthcare applications.
+### Most Important Features
 
------
+Through visual analysis and correlation testing, four features stood out as the strongest predictors of heart disease:
 
-## Methodology
+| Feature | Why It Matters |
+|---|---|
+| *ST_Slope* | Abnormal ST slope during exercise is a well-known cardiac warning sign |
+| *ExerciseAngina* | Chest pain triggered by exercise strongly indicates cardiovascular problems |
+| *Oldpeak* | Higher ST depression during exercise signals abnormal heart behaviour |
+| *MaxHR* | Patients with heart disease tend to have a lower maximum heart rate |
 
-### 1 — EDA & Preprocessing
+### Notable Patterns
+- Patients *with* heart disease had significantly *higher Oldpeak* values
+- Patients *with* heart disease had significantly *lower MaxHR* values
+- *Chest pain type* showed a strong relationship with the target — not all chest pain types carry the same risk
 
-- Identified and handled data quality issues (zero-value imputation)
-- Performed univariate and bivariate analysis using histograms, boxplots, and heatmaps
-- Applied One-Hot Encoding (12 → 16 features) and StandardScaler
-- Stratified 80/20 train-test split to preserve class distribution
+---
 
-### 2 — SVM Classification
+## 3. Preprocessing Decisions
 
-- Trained an RBF kernel SVM — chosen for its ability to model non-linear relationships
-- Evaluated using accuracy, ROC-AUC, confusion matrix, and classification report
-- Created a 3D PCA visualisation of the decision boundary
+Before modelling, several preprocessing steps were applied:
 
-### 3 — XGBoost + Hyperparameter Tuning
+- *Cholesterol zeros* replaced with median value
+- *Categorical variables* converted using One-Hot Encoding (features expanded from 12 to 16)
+- *Feature scaling* applied using StandardScaler — critical for SVM which is sensitive to feature magnitudes
+- *Stratified 80/20 train-test split* to preserve the class ratio in both sets
 
-- Trained a baseline XGBoost classifier
-- Applied GridSearchCV over n_estimators [50–250] and learning_rate [0.01–0.3]
-- Best parameters: learning_rate=0.1, n_estimators=200 (5-fold CV ROC-AUC: 0.9195)
-- Analysed feature importance to interpret model predictions
+---
 
------
+## 4. Model Results
 
-## Most Important Features
+### SVM (Support Vector Machine)
 
-Based on XGBoost feature importance analysis:
+An RBF kernel SVM was chosen to capture the non-linear relationships in the data.
 
-1. *ST_Slope* — abnormal slopes strongly linked to heart disease
-1. *ExerciseAngina* — exercise-induced chest pain is a key diagnostic indicator
-1. *Oldpeak* — elevated ST depression during exercise signals abnormal heart behaviour
-1. *MaxHR* — lower maximum heart rate reflects reduced cardiovascular function
+| Metric | Score |
+|---|---|
+| Accuracy | 85.87% |
+| ROC-AUC | *94.09%* |
 
------
+The confusion matrix showed:
+- 92 true positives (correctly identified heart disease)
+- 66 true negatives (correctly identified no heart disease)
+- 16 false positives
+- 10 false negatives
 
-## Tech Stack
+> *False negatives are the most critical error in this context* — they represent patients with heart disease who were incorrectly classified as healthy. With only 10, the model performs well on this front.
 
-|Library                 |Purpose                                      |
-|------------------------|---------------------------------------------|
-|pandas / numpy      |Data manipulation                            |
-|matplotlib / seaborn|Visualisation                                |
-|scikit-learn          |SVM, preprocessing, GridSearchCV, evaluation |
-|xgboost               |Gradient boosting classifier                 |
-|PCA                   |Dimensionality reduction for 3D visualisation|
+### XGBoost
 
------
+A baseline XGBoost model was trained first, then optimised using Grid Search Cross-Validation over:
+- n_estimators: [50, 100, 150, 200, 250]
+- learning_rate: [0.01, 0.05, 0.1, 0.2, 0.3]
 
-## How to Run
+*Best parameters found:* learning_rate=0.1, n_estimators=200
 
-1. Clone the repository
-   
-   bash
-   git clone https://github.com/lasfarfz-pixel/heart-failure-prediction.git
-   
-1. Install dependencies
-   
-   bash
-   pip install pandas numpy matplotlib seaborn scikit-learn xgboost
-   
-1. Download heart.csv from [Kaggle](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data) and place it in the project folder
-1. Open the notebook and run all cells in order
+| Metric | Baseline | Tuned |
+|---|---|---|
+| Accuracy | 85.87% | 85.87% |
+| ROC-AUC | 91.62% | 91.95% |
 
-> *Note:* Replace the Google Colab file upload cell with df = pd.read_csv('heart.csv') when running locally.
+---
 
------
+## 5. Model Comparison
 
+| | SVM | XGBoost |
+|---|---|---|
+| Accuracy | 85.87% | 85.87% |
+| ROC-AUC | *94.09%* | 91.95% |
+| Interpretability | ❌ Black box | ✅ Feature importance |
+| Speed | Slower on large data | Faster |
+| Best for | Pure predictive performance | Explainable decisions |
+
+### Which model is better?
+
+*It depends on the use case:*
+
+- If the goal is *maximum predictive accuracy* → SVM wins (higher ROC-AUC)
+- If the goal is *clinical decision support* where doctors need to understand why a prediction was made → XGBoost wins (interpretable feature importance)
+
+In a real healthcare setting, *XGBoost would likely be the preferred choice* because explainability builds trust with medical professionals and supports better patient outcomes.
+
+---
+
+## 6. Feature Importance (XGBoost)
+
+The top features identified by XGBoost align closely with established medical knowledge:
+
+1. *ST_Slope* — the most important predictor
+2. *ExerciseAngina* — second strongest signal
+3. *Oldpeak* — third strongest signal
+4. *MaxHR* — fourth strongest signal
+
+This alignment with clinical expertise gives confidence that the model is learning meaningful patterns rather than noise.
+
+---
+
+## 7. Conclusions
+
+- Both models achieved *~86% accuracy* on unseen test data
+- SVM showed stronger discriminative power (*ROC-AUC: 94.09%*)
+- XGBoost provided more *interpretable results* through feature importance
+- The most clinically significant features — ST_Slope, ExerciseAngina, Oldpeak — were consistently identified across all analyses
+- Hyperparameter tuning improved XGBoost's cross-validation ROC-AUC from 91.62% to 91.95%
+
+### Limitations
+- Results are based on a single dataset of 918 patients
+- Hyperparameter tuning was limited to two parameters (n_estimators, learning_rate)
+- The model has not been validated on external datasets
+
+### Future Work
+- Test on larger and more diverse patient datasets
+- Explore ensemble methods combining SVM and XGBoost
+- Apply SHAP values for deeper model interpretability
+- Consider additional hyperparameters (max_depth, subsample) in tuning
