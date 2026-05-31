@@ -23,7 +23,7 @@ heart-disease-predictive-analytics/
 ├── report.pdf                       # Detailed analysis report
 ├── requirements.txt                 # Exact package dependency versions
 └── README.md                        # Portfolio landing page & executive brief
-
+---
 ## 1. Understanding the Data
 
 The dataset contains *918 patients* with *11 clinical features* including age, cholesterol, resting blood pressure, chest pain type, and maximum heart rate.
