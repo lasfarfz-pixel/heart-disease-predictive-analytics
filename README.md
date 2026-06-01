@@ -7,6 +7,8 @@ This project predicts whether a patient has heart disease using clinical data an
 **Dataset:** [Heart Failure Prediction Dataset](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data) — 918 patients, 11 clinical features.
 
 ---
+## 📓 View Full Notebook
+[![nbviewer](https://img.shields.io/badge/render-nbviewer-orange)](https://nbviewer.org/github/lasfarfz-pixel/heart-disease-predictive-analytics/blob/main/heart-failure-prediction.ipynb)
 
 ## Project Structure
 
