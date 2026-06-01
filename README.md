@@ -20,8 +20,8 @@ heart-disease-predictive-analytics/
 │   ├── data_preprocessing.py        # Automated cleaning, imputation & feature encoding
 │   └── models.py                    # Production model training & validation scripts
 │
+├── .gitignore                       # Tells GitHub which temporary files to ignore
 ├── heart-failure-prediction.ipynb   # Experimental pipeline & visualization notebook
-├── report.pdf                       # Detailed analysis report
 ├── requirements.txt                 # Exact package dependency versions
 └── README.md                        # Portfolio landing page & executive brief
 ```
